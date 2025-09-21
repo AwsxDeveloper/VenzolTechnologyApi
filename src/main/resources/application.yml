@@ -1,0 +1,54 @@
+jwt:
+  private-key: ${PRIVATE_KEY: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}
+  public-key: ${PUBLIC_KEY:MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAlZf22z3qSn6m5XUIUHpMNgVgXRkFjXO6mwfIkXMrt+K6S4QbUPF8CEzDT6RAVRVHJUzqXA+dRw8AVQbgUHwriGA93cJLgxxAYeW3w7fqIUmyXGCgJatUY6ZtCh/JPhxLbzSGH1hx3HNeESJP4+PyV6GwOnyVtBJ9NrmCQO+AMx4e/LUhgml3VAMQQKi4Zi1ksU7PK0qxsY1mD2L0J0wbwR7QMBO9BCGzPFEoOTV2kT7uPczn9hHE8EcP6RaTqfAKBcpQR30pURgEITymVM1gKxXbuXK3JZKnrYTfqth3PQiQP5eB8/8YDVnrFEyxWqYRXGanyKm6IvM+AHtSBC6+Lfdk6iT7ooZxxXTH1bzlburZ+DQ4DQZxPpzM5PoE2Aulo54pLaQ3I2mn1F2aw41vncTBaVawC6E4zfyY76ujD+p/WazU1clCSrVn3RqFnVuuvnuWEs2vht4YNSqyBUd01rrQVQW0r/SqD+NAnN36wkeuYI3CDAz9FLSLamzYc/BcYSLesKCJOQfiFlLPdQvUIicxPmgUMREK5exEYGl91PehJCQPGnU+IUt/vUoGk600MRR+cmqWXlZ5/zl78cs0HngVmextxW7nNSzeCu8OvsxX1XIy/wA+xX980y5o7rEIll4062z1eB5PW6y37dgWvz5oN/BbAOgP5ieEQDWXXeMCAwEAAQ==}
+  refresh-token-validity: 2592000000
+  access-token-validity: 3600000
+
+server:
+  port: 8068
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  application:
+    name: VenzolTechnologyApi
+  datasource:
+
+    # url: jdbc:sqlserver://;serverName=sql.bsite.net\MSSQL2016;databaseName=vztap_dev;encrypt=true;trustServerCertificate=true;
+    # username: vztap_dev
+    # password: xvP43XOdIeTGzOY
+
+    url: jdbc:sqlserver://localhost:1433;databaseName=LunarisDB;encrypt=true;trustServerCertificate=true;
+    username: lunaris_service_dev
+    password: Admin_0123456
+
+  jpa:
+    show-sql: false
+    open-in-view: true
+    hibernate:
+      ddl-auto: update
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: auth.vzt@gmail.com
+    password: etjalvlvkjnlglve
+    default-encoding: utf-8
+    protocol: smtp
+    test-connection: false
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+mail-account:
+  name: auth.vzt@gmail.com
+  base_url: http://localhost:5000
+image:
+  base_url: http://localhost:8068/v2/account/profile-picture/
+  base_url_prod: https://taskbackend-npo2.onrender.com/v2/account/profile-picture/
+realm:
+  base_url: http://localhost:8068/api/realm/logo/
+  base_url_prod: https://taskbackend-npo2.onrender.com/api/realm/logo/

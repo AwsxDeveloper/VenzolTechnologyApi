@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email address verification</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+</head>
+<body style="font-family: 'Inter', sans-serif;font-optical-sizing: auto;font-style: normal;">
+    <main style="display:block;background-color: #EEEEEE; border-radius: 10px 10px 0 0;margin: 25px 25px 0 25px;padding: 1px 20px;">
+        <img style=" display:block; height: 100px;width: 100px; margin: 10px auto;" src="https://lh3.googleusercontent.com/pw/AP1GczP37ygv5WmHHDCuhAIFD3RY6TQoDK_fdJX0PH_dvlCffwQCVspKa8N3aLwk8x2WBZA0rFbPx0bFl0CS0xk-DyqENNuuMpsnsyBZJWSNLakUeuJLXQ=w2400" alt="LOGO">
+        <h2 style="text-align: center;" th:text="${name}">Hi</h2>
+
+        <p style="text-align: center;">We sent you this email, because our system noticed, that your email is not verified, maybe your new here, or you made some critical profile modification, such email address change.</p>
+        
+        <p style="text-align: center;">Click the link below to verify your account:</p>
+        <a th:href="${link}" style="text-align: center; display: block;">Verify My Account</a>
+        
+        <p style="text-align: center; margin-top: 25px;">If the link isn’t clickable, you can copy and paste this TOKEN into the email confirmation page:</p>
+        <p style="text-align: center;color:steelblue;" th:text="${confirmation_id}"></p>
+        
+        <p style="text-align: center;">After verification, you’ll have access to all features on VENZOL TECHNOLOGY.</p>
+        
+        <p style="text-align: center;">If you encounter any issues or have questions, our support team is here to help. Simply reply to this email or reach out to us at <a href="mailto:auth.vzt@gmail.com">auth.vzt@gmail.com</a>.</p>
+
+    </main>
+    <footer style="display:block;background-color: #c7c7c7; border-radius: 0 0 10px 10px;margin: 0 25px 25px 25px;padding: 1px 20px;text-align: center;color: white; font-size: 10px;">
+        <p style="margin: 10px 0 0 0;">Sincerely,</p>
+        <p style="margin: 0 0 0 0;">VENZOL TECHNOLOGY</p>
+        <p style="margin: 0 0 10px 0;" th:text="${year}"></p>
+    </footer>
+</body>
+</html>
