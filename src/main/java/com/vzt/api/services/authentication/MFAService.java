@@ -5,23 +5,31 @@ import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.vzt.api.config.CustomAuthProvider;
 import com.vzt.api.config.JwtService;
+import com.vzt.api.dtos.account.DeleteMfaDTO;
 import com.vzt.api.dtos.authentication.MFAVerifyDTO;
 import com.vzt.api.models.authentication.MFASetting;
 import com.vzt.api.models.authentication.User;
 import com.vzt.api.models.session.BrowserSession;
-import com.vzt.api.models.session.SessionLogin;
 import com.vzt.api.repositories.authentication.MFASettingRepository;
 import com.vzt.api.repositories.authentication.UserRepository;
 import com.vzt.api.repositories.session.BrowserSessionRepository;
+import com.vzt.api.repositories.session.SessionLoginRepository;
 import com.vzt.api.responses.ApplicationResponse;
 import com.vzt.api.responses.ResponseStatus;
+import com.vzt.api.responses.account.HasMFAResponse;
 import com.vzt.api.responses.authentication.MFAResponse;
+import com.vzt.api.services.UserByRequestService;
 import com.warrenstrange.googleauth.GoogleAuthenticator;
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
@@ -42,7 +50,12 @@ public class MFAService {
     private final SessionService sessionService;
     private final MFASettingRepository mfaSettingRepository;
     private final BrowserSessionRepository browserSessionRepository;
+    private final UserByRequestService userByRequestService;
     private final GoogleAuthenticator gAuth = new GoogleAuthenticator();
+    private final WebInvocationPrivilegeEvaluator privilegeEvaluator;
+    private final SessionLoginRepository sessionLoginRepository;
+    private final CustomAuthProvider customAuthProvider;
+
 
     public String generateSecret() {
         GoogleAuthenticatorKey key = gAuth.createCredentials();
@@ -147,19 +160,16 @@ public class MFAService {
 
         String sessionId = sessionService.getSessionId(request);
 
-        for (int i = 0; i < browserSession.getLogins().size(); i++) {
-            if (browserSession.getLogins().get(i).getMfaToken().equals(mfaCookie)) {
-                browserSession.getLogins().get(i).setMfaToken(null);
-                break;
-            }
-        }
-
-        browserSessionRepository.save(browserSession);
+        browserSession.getLogins().stream().filter(login -> Objects.equals(login.getMfaToken(), mfaCookie)).findFirst().ifPresent(login -> {
+            login.setMfaToken(null);
+            sessionLoginRepository.save(login);
+        });
 
         if (sessionId == null) {
-            return new ApplicationResponse<>(ResponseStatus.SUCCESS, "Successful verification!", LocalDateTime.now(), null, sessionService.createSession(user, dto.isTrusted(), request));
+            return new ApplicationResponse<>(ResponseStatus.SUCCESS, "Successful verification!", LocalDateTime.now(), null, sessionService.createSession(user, dto.isTrusted(), request, true));
         }
-        return new ApplicationResponse<>(ResponseStatus.SUCCESS, "Successful verification!", LocalDateTime.now(), null, sessionService.addLoginToExistingSession(user, dto.isTrusted(), request));
+
+        return new ApplicationResponse<>(ResponseStatus.SUCCESS, "Successful verification!", LocalDateTime.now(), null, sessionService.addLoginToExistingSession(user, dto.isTrusted(), request, true));
     }
 
 
@@ -180,5 +190,52 @@ public class MFAService {
         mfaSettingRepository.delete(setting);
 
         return new ApplicationResponse<>(ResponseStatus.SUCCESS, "Multi-Factor authentication is now off!", LocalDateTime.now(), null, null);
+    }
+
+    public ApplicationResponse<HasMFAResponse> hasMfA(HttpServletRequest request) {
+        User user = userByRequestService.get(request);
+
+        if (user == null) {
+            return new ApplicationResponse<>(ResponseStatus.UNAUTHORIZED, "User not found!", LocalDateTime.now(), null, null);
+        }
+
+        return new ApplicationResponse<>(ResponseStatus.SUCCESS, "Multi-Factor authentication status is loaded!", LocalDateTime.now(), null,
+                new HasMFAResponse(
+                        user.getMfaSetting() != null
+                )
+        );
+
+    }
+
+    public ApplicationResponse<?> deleteMFA(HttpServletRequest request, DeleteMfaDTO dto) {
+        User user = userByRequestService.get(request);
+        if (user == null) {
+            return new ApplicationResponse<>(ResponseStatus.UNAUTHORIZED, "User not found!", LocalDateTime.now(), null, null);
+        }
+
+        try {
+            Authentication authentication = customAuthProvider.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            user.getUsername(),
+                            dto.getPassword()
+                    )
+            );
+            if (user.getMfaSetting() == null) {
+                return new ApplicationResponse<>(ResponseStatus.ERROR, "Mfa settings not found!", LocalDateTime.now(), null, null);
+            }
+            if (!Objects.equals(user.getMfaSetting().getDeletionKey(), dto.getDeletionCode())) {
+                return new ApplicationResponse<>(ResponseStatus.ERROR, "Wrong deletion code!", LocalDateTime.now(), null, null);
+            }
+
+            MFASetting setting = user.getMfaSetting();
+            user.setMfaSetting(null);
+            userRepository.save(user);
+            mfaSettingRepository.delete(setting);
+            return new ApplicationResponse<>(ResponseStatus.SUCCESS, "Multi-Factor authentication is now off!", LocalDateTime.now(), null, null);
+        } catch (BadCredentialsException e) {
+            return new ApplicationResponse<>(ResponseStatus.UNAUTHORIZED, "Invalid password!", LocalDateTime.now(), null, null);
+        } catch (Exception e) {
+            return new ApplicationResponse<>(ResponseStatus.ERROR, e.getMessage(), LocalDateTime.now(), null, null);
+        }
     }
 }

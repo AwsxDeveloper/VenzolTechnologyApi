@@ -174,12 +174,12 @@ public class RegisterService {
         userRepository.save(user);
         mailCodeRepository.delete(mailCode);
         if (sessionService.getSessionId(request)==null){
-            BrowserSession browserSession = sessionService.createSession(user, false, request);
+            BrowserSession browserSession = sessionService.createSession(user, false, request, false);
             SessionLogin sessionLogin = browserSession.getLogins().get(0);
             return new ApplicationResponse<BrowserSession>(ResponseStatus.SUCCESS, "You successfully confirmed your email!", LocalDateTime.now(), sessionLogin.getAccessToken(), browserSession);
         }
 
-        SessionLogin sessionLogin = sessionService.addLoginToExistingSession(user, false,request);
+        SessionLogin sessionLogin = sessionService.addLoginToExistingSession(user, false,request, false);
         return new ApplicationResponse<SessionLogin>(ResponseStatus.SUCCESS, "You successfully confirmed your email!", LocalDateTime.now(), sessionLogin.getAccessToken(), sessionLogin);
     }
 

@@ -73,14 +73,21 @@ public class CustomOncePerRequestFilter extends OncePerRequestFilter {
 
             SessionLogin sessionLogin = null;
             for(SessionLogin login: browserSession.getLogins()){
-                if (login.getAccessToken().equals(jwt)) {
+                if (Objects.equals(login.getAccessToken(), jwt)) {
                     sessionLogin = login;
                 }
             }
+
             if (sessionLogin == null) {
                 filterChain.doFilter(request, response);
                 return;
             }
+
+            if(sessionLogin.getMfaToken() != null) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
 
             Optional<User> optionalUser = userRepository.findByUsername(username);
             if (optionalUser.isEmpty()){

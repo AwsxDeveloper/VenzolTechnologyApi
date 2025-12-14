@@ -1,7 +1,6 @@
 package com.vzt.api.services.authentication;
 
 import com.vzt.api.config.CustomAuthProvider;
-import com.vzt.api.config.JwtService;
 import com.vzt.api.dtos.authentication.AuthenticationCheckDTO;
 import com.vzt.api.dtos.authentication.UsernamePasswordDTO;
 import com.vzt.api.models.authentication.User;
@@ -72,14 +71,12 @@ public class LoginService {
             if (userOptional.isEmpty()) {
                 return new ApplicationResponse<>(ResponseStatus.ERROR, "Invalid email!", LocalDateTime.now(), null, null);
             }
+        }else {
+            userOptional = userRepository.findByUsername(dto.getContent());
+            if (userOptional.isEmpty()){
+                return new ApplicationResponse<>(ResponseStatus.ERROR, "Invalid username!", LocalDateTime.now(), null, null);
+            }
         }
-
-        userOptional = userRepository.findByUsername(dto.getContent());
-        if (userOptional.isEmpty()){
-            return new ApplicationResponse<>(ResponseStatus.ERROR, "Invalid username!", LocalDateTime.now(), null, null);
-        }
-
-
 
         User user = userOptional.get();
         UserDetailsForLoginResponse userDetailsForLoginResponse = new UserDetailsForLoginResponse(
@@ -152,10 +149,10 @@ public class LoginService {
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
             if (sessionId == null) {
-               return new ApplicationResponse<>(ResponseStatus.SUCCESS,"Session created!",  LocalDateTime.now(), null, sessionService.createSession(user, false, request));
+               return new ApplicationResponse<>(ResponseStatus.SUCCESS,"Session created!",  LocalDateTime.now(), null, sessionService.createSession(user, false, request, false));
             }
 
-            SessionLogin sessionLogin = sessionService.addLoginToExistingSession(user, false,request);
+            SessionLogin sessionLogin = sessionService.addLoginToExistingSession(user, false,request, false);
             return new ApplicationResponse<>(ResponseStatus.SUCCESS, "User added to the session!", LocalDateTime.now(), null,  sessionLogin);
 
         } catch (BadCredentialsException e) {

@@ -39,7 +39,6 @@ public class SessionService {
     }
 
 
-
     public String getMfaToken(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         String mfaToken = "";
@@ -54,7 +53,7 @@ public class SessionService {
     }
 
 
-    public SessionLogin createLogin(User user){
+    public SessionLogin createLogin(User user, boolean mfa_completed) {
         UUID uuid = UUID.randomUUID();
         while (sessionLoginRepository.existsByLoginId(uuid)) {
             uuid = UUID.randomUUID();
@@ -63,11 +62,11 @@ public class SessionService {
         String mfaToken = null;
         String accessToken = null;
         String credentialExpiredToken = null;
-        if (user.getMfaSetting()!=null){
+        if (user.getMfaSetting() != null&&!mfa_completed) {
             do {
                 mfaToken = UUID.randomUUID().toString();
-            }while (sessionLoginRepository.existsByMfaToken(mfaToken));
-        }else {
+            } while (sessionLoginRepository.existsByMfaToken(mfaToken));
+        } else {
             accessToken = jwtService.generateAccessToken(user);
         }
 
@@ -84,7 +83,7 @@ public class SessionService {
         return sessionLoginRepository.save(sessionLogin);
     }
 
-    public BrowserSession createSession(User user, boolean trustedUser, HttpServletRequest request) {
+    public BrowserSession createSession(User user, boolean trustedUser, HttpServletRequest request, boolean mfa_completed) {
         UUID uuid = UUID.randomUUID();
         while (browserSessionRepository.existsBySessionId(uuid)) {
             uuid = UUID.randomUUID();
@@ -92,8 +91,8 @@ public class SessionService {
         BrowserSession browserSession = new BrowserSession(
                 null,
                 uuid,
-                List.of(createLogin(user)),
-                trustedUser?List.of(user.getUid()):null,
+                List.of(createLogin(user, mfa_completed)),
+                trustedUser ? List.of(user.getUid()) : null,
                 request.getRemoteAddr(),
                 request.getHeader("User-Agent"),
                 LocalDateTime.now(),
@@ -102,23 +101,38 @@ public class SessionService {
         return browserSessionRepository.save(browserSession);
     }
 
-    public SessionLogin addLoginToExistingSession(User user, boolean trusted, HttpServletRequest request) {
+    public SessionLogin addLoginToExistingSession(User user, boolean trusted, HttpServletRequest request, boolean mfa_completed) {
         Optional<BrowserSession> optionalBrowserSession = browserSessionRepository.findBySessionId(UUID.fromString(getSessionId(request)));
-        if (optionalBrowserSession.isEmpty()){
+        if (optionalBrowserSession.isEmpty()) {
             return null;
         }
         BrowserSession browserSession = optionalBrowserSession.get();
-        if (trusted){
+        if (trusted) {
             browserSession.getTrustedUsers().add(user.getUid());
 
         }
-        SessionLogin sessionLogin = createLogin(user);
+
+        browserSession.getLogins().stream().filter(login-> login.getUser().equals(user)).findFirst().ifPresent(
+                login -> {
+                    login.setAccessToken(jwtService.generateAccessToken(user));
+                    sessionLoginRepository.save(login);
+                }
+        );
+        SessionLogin sessionLogin = null;
+
+        sessionLogin = browserSession.getLogins().stream().filter(login -> login.getUser().equals(user)).findFirst().orElse(null);
+
+        if (sessionLogin != null) {
+            return  sessionLogin;
+        }
+
+        sessionLogin = createLogin(user, mfa_completed);
         browserSession.getLogins().add(sessionLogin);
         browserSessionRepository.save(browserSession);
         return sessionLogin;
     }
 
-    public ResponseCookie createSessionIdCookie(String sessionId){
+    public ResponseCookie createSessionIdCookie(String sessionId) {
         return ResponseCookie
                 .from("SESSION_ID", sessionId)
                 .httpOnly(true)
@@ -128,7 +142,7 @@ public class SessionService {
                 .build();
     }
 
-    public ResponseCookie createMFACookie(String mfaToken){
+    public ResponseCookie createMFACookie(String mfaToken) {
         return ResponseCookie
                 .from("MFA_TOKEN", mfaToken)
                 .httpOnly(true)
@@ -138,24 +152,24 @@ public class SessionService {
                 .build();
     }
 
-    public boolean isCredentialExpired(SessionLogin sessionLogin){
+    public boolean isCredentialExpired(SessionLogin sessionLogin) {
         return sessionLogin.getUser().getCredentialExpire() != null && sessionLogin.getUser().getCredentialExpire().isAfter(LocalDateTime.now());
     }
 
-    public int getActiveUserId(SessionLogin sessionLogin){
+    public int getActiveUserId(SessionLogin sessionLogin) {
         Optional<BrowserSession> browserSessionOptional = browserSessionRepository.findByLoginsContains(sessionLogin);
         return browserSessionOptional.map(browserSession -> browserSession.getLogins().indexOf(sessionLogin)).orElse(-1);
     }
 
-    public String updateAccessToken(UUID sessionId, User user){
+    public String updateAccessToken(UUID sessionId, User user) {
         String accessToken = jwtService.generateAccessToken(user);
         Optional<BrowserSession> optionalBrowserSession = browserSessionRepository.findBySessionId(sessionId);
-        if (optionalBrowserSession.isEmpty()){
+        if (optionalBrowserSession.isEmpty()) {
             return null;
         }
         BrowserSession browserSession = optionalBrowserSession.get();
         for (int i = 0; i < browserSession.getLogins().size(); i++) {
-            if (browserSession.getLogins().get(i).getUser().getUid()==user.getUid()){
+            if (browserSession.getLogins().get(i).getUser().getUid() == user.getUid()) {
                 browserSession.getLogins().get(i).setAccessToken(accessToken);
                 browserSessionRepository.save(browserSession);
                 return accessToken;

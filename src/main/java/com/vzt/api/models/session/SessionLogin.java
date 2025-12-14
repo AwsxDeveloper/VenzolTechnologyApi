@@ -23,6 +23,7 @@ public class SessionLogin {
     private String accessToken;
     @Column(unique = true, nullable = false, updatable = false)
     private UUID loginId;
+
     private String mfaToken;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
