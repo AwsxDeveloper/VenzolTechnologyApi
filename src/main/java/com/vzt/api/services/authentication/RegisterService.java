@@ -144,12 +144,12 @@ public class RegisterService {
                 false,
                 true,
                 null,
-                AccountType.LOCAL,
                 null,
                 userDetail,
                 null,
                 null,
                 sendRegisterConfirmationEmail(registerDTO.getEmail(), userDetail.getFirstName()+" "+userDetail.getLastName()),
+                null,
                 null,
                 LocalDateTime.now(),
                 LocalDateTime.now()

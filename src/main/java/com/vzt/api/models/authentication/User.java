@@ -44,8 +44,6 @@ public class User {
     private boolean accountVerified;
     private boolean emailNotificationEnabled;
     private LocalDateTime credentialExpire;
-    @Enumerated(EnumType.STRING)
-    private AccountType accountType;
     private LocalDateTime lastLogin;
 
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
@@ -67,6 +65,10 @@ public class User {
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "mfa_id", referencedColumnName = "id")
     private MFASetting mfaSetting;
+
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private List<SSOOption> ssoOptions;
 
     @CreatedDate
     @Column(updatable = false,  nullable = false)

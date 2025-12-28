@@ -3,6 +3,7 @@ package com.vzt.api.controllers.authentication;
 import com.google.zxing.WriterException;
 import com.vzt.api.dtos.account.DeleteMfaDTO;
 import com.vzt.api.dtos.authentication.MFAVerifyDTO;
+import com.vzt.api.models.authentication.User;
 import com.vzt.api.models.session.BrowserSession;
 import com.vzt.api.models.session.SessionLogin;
 import com.vzt.api.responses.ApplicationResponse;
@@ -16,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -67,20 +69,20 @@ public class MFAController {
     }
 
     @PostMapping("/setup")
-    public ResponseEntity<ApplicationResponse<MFAResponse>> setup(HttpServletRequest request) throws IOException, WriterException {
-        ApplicationResponse<MFAResponse> response = mfaService.setMfa(request);
+    public ResponseEntity<ApplicationResponse<MFAResponse>> setup(@AuthenticationPrincipal User user) throws IOException, WriterException {
+        ApplicationResponse<MFAResponse> response = mfaService.setMfa(user);
         return new ResponseEntity<>(response, response.getStatus().value);
     }
 
     @GetMapping("/status")
-    public ResponseEntity<ApplicationResponse<HasMFAResponse>> status(HttpServletRequest request) {
-        ApplicationResponse<HasMFAResponse> response = mfaService.hasMfA(request);
+    public ResponseEntity<ApplicationResponse<HasMFAResponse>> status(@AuthenticationPrincipal User user) {
+        ApplicationResponse<HasMFAResponse> response = mfaService.hasMfA(user);
         return new ResponseEntity<>(response, response.getStatus().value);
     }
 
     @PostMapping("/delete")
-    public ResponseEntity<ApplicationResponse<?>> delete(HttpServletRequest request, @RequestBody DeleteMfaDTO dto) {
-        ApplicationResponse<?> response = mfaService.deleteMFA(request, dto);
+    public ResponseEntity<ApplicationResponse<?>> delete(@AuthenticationPrincipal User user, @RequestBody DeleteMfaDTO dto) {
+        ApplicationResponse<?> response = mfaService.deleteMFA(user, dto);
         return new ResponseEntity<>(response, response.getStatus().value);
     }
 }

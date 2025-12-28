@@ -178,4 +178,8 @@ public class SessionService {
         return null;
     }
 
+    public BrowserSession get(UUID sessionId) {
+        return browserSessionRepository.findBySessionId(sessionId).orElse(null);
+    }
+
 }

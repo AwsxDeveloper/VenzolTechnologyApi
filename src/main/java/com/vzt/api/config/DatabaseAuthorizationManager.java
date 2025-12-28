@@ -14,6 +14,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,8 +31,17 @@ public class DatabaseAuthorizationManager implements AuthorizationManager<Reques
         String requestPath = context.getRequest().getRequestURI();
         HttpMethod httpMethod = HttpMethod.valueOf(context.getRequest().getMethod());
 
+
         Optional<Endpoint> endpointOptional = endpointRepository.findEndpointByPathAndMethod(requestPath, httpMethod);
         if (endpointOptional.isEmpty()) {
+            AntPathMatcher matcher = new AntPathMatcher();
+            if (
+                    matcher.match("/v2/account/profile-picture/{imageId}",requestPath)
+                            || matcher.match("/v2/realm/logo/{imageId}",requestPath)
+                            || matcher.match("/v2/realm/{realm_id}",requestPath)
+            ){
+                return new AuthorizationDecision(true);
+            }
             return new AuthorizationDecision(false);
         }
 

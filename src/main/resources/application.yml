@@ -6,6 +6,8 @@ jwt:
 
 server:
   port: 8068
+  http2:
+    enabled: true
 
 spring:
   servlet:
@@ -15,15 +17,16 @@ spring:
   application:
     name: VenzolTechnologyApi
   datasource:
-
-    # url: jdbc:sqlserver://;serverName=sql.bsite.net\MSSQL2016;databaseName=vztap_dev;encrypt=true;trustServerCertificate=true;
-    # username: vztap_dev
-    # password: xvP43XOdIeTGzOY
-
     url: jdbc:sqlserver://localhost:1433;databaseName=LunarisDB;encrypt=true;trustServerCertificate=true;
     username: lunaris_service_dev
     password: Admin_0123456
-
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    hikari:
+      minimum-idle: 10
+      maximum-pool-size: 250
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
   jpa:
     show-sql: false
     open-in-view: true
@@ -50,5 +53,5 @@ image:
   base_url: http://localhost:8068/v2/account/profile-picture/
   base_url_prod: https://taskbackend-npo2.onrender.com/v2/account/profile-picture/
 realm:
-  base_url: http://localhost:8068/api/realm/logo/
+  base_url: http://localhost:8068/v2/realm/logo/
   base_url_prod: https://taskbackend-npo2.onrender.com/api/realm/logo/

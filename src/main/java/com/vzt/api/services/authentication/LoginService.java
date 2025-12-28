@@ -23,6 +23,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -88,6 +89,15 @@ public class LoginService {
         return new ApplicationResponse<UserDetailsForLoginResponse>(ResponseStatus.SUCCESS, "User details loaded!", LocalDateTime.now(), null, userDetailsForLoginResponse);
     }
 
+    private boolean isOnTheUserList(List<User> userList, User user) {
+        for (User u : userList){
+            if (u.getId().equals(user.getId())){
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean hasRealmAccess(User user, UUID realmId) {
         Optional<Realm> realmOptional = realmRepository.findByRealmId(realmId);
         if (realmOptional.isEmpty()) {
@@ -141,7 +151,7 @@ public class LoginService {
             if(dto.getRealmId()!=null){
 
                 if (!hasRealmAccess(user, UUID.fromString(dto.getRealmId()))){
-                    return new ApplicationResponse<>(ResponseStatus.ERROR, "You do not have access to this realm, please contact the administrator!", LocalDateTime.now(), null, null);
+                    return new ApplicationResponse<>(ResponseStatus.ERROR, "You do not have access to this realm!", LocalDateTime.now(), null, null);
                 }
             }
 

@@ -96,14 +96,7 @@ public class MFAService {
         return stringBuilder.toString();
     }
 
-    public ApplicationResponse<MFAResponse> setMfa(HttpServletRequest request) throws IOException, WriterException {
-        String jwt = request.getHeader(HttpHeaders.AUTHORIZATION).substring(7);
-        String username = jwtService.extractUsername(jwt);
-        Optional<User> userOptional = userRepository.findByUsername(username);
-        if (userOptional.isEmpty()) {
-            return new ApplicationResponse<>(ResponseStatus.UNAUTHORIZED, "User not found!", LocalDateTime.now(), null, null);
-        }
-        User user = userOptional.get();
+    public ApplicationResponse<MFAResponse> setMfa(User user) throws IOException, WriterException {
         MFASetting setting = new MFASetting(
                 null,
                 generateSecret(),
@@ -192,13 +185,7 @@ public class MFAService {
         return new ApplicationResponse<>(ResponseStatus.SUCCESS, "Multi-Factor authentication is now off!", LocalDateTime.now(), null, null);
     }
 
-    public ApplicationResponse<HasMFAResponse> hasMfA(HttpServletRequest request) {
-        User user = userByRequestService.get(request);
-
-        if (user == null) {
-            return new ApplicationResponse<>(ResponseStatus.UNAUTHORIZED, "User not found!", LocalDateTime.now(), null, null);
-        }
-
+    public ApplicationResponse<HasMFAResponse> hasMfA(User user) {
         return new ApplicationResponse<>(ResponseStatus.SUCCESS, "Multi-Factor authentication status is loaded!", LocalDateTime.now(), null,
                 new HasMFAResponse(
                         user.getMfaSetting() != null
@@ -207,12 +194,7 @@ public class MFAService {
 
     }
 
-    public ApplicationResponse<?> deleteMFA(HttpServletRequest request, DeleteMfaDTO dto) {
-        User user = userByRequestService.get(request);
-        if (user == null) {
-            return new ApplicationResponse<>(ResponseStatus.UNAUTHORIZED, "User not found!", LocalDateTime.now(), null, null);
-        }
-
+    public ApplicationResponse<?> deleteMFA(User user, DeleteMfaDTO dto) {
         try {
             Authentication authentication = customAuthProvider.authenticate(
                     new UsernamePasswordAuthenticationToken(

@@ -3,6 +3,7 @@ package com.vzt.api.controllers.account;
 import com.vzt.api.dtos.account.ChangePasswordDTO;
 import com.vzt.api.dtos.account.UpdateProfileDTO;
 import com.vzt.api.models.authentication.ProfilePicture;
+import com.vzt.api.models.authentication.User;
 import com.vzt.api.responses.ApplicationResponse;
 import com.vzt.api.responses.account.LoggedInUsersResponse;
 import com.vzt.api.responses.account.ProfileResponse;
@@ -13,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -34,14 +36,14 @@ public class AccountController {
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<ApplicationResponse<ProfileResponse>> getProfile(HttpServletRequest request) {
-        ApplicationResponse<ProfileResponse> response = accountService.getProfileData(request);
+    public ResponseEntity<ApplicationResponse<ProfileResponse>> getProfile(@AuthenticationPrincipal User user) {
+        ApplicationResponse<ProfileResponse> response = accountService.getProfileData(user);
         return new ResponseEntity<>(response, response.getStatus().value);
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<ApplicationResponse<ProfileResponse>> updateProfile(HttpServletRequest request, @RequestBody UpdateProfileDTO dto) {
-        ApplicationResponse<ProfileResponse> response = accountService.updateProfileData(request, dto);
+    public ResponseEntity<ApplicationResponse<ProfileResponse>> updateProfile(HttpServletRequest request, @AuthenticationPrincipal User user, @RequestBody UpdateProfileDTO dto) {
+        ApplicationResponse<ProfileResponse> response = accountService.updateProfileData(request,user, dto);
         return new ResponseEntity<>(response, response.getStatus().value);
     }
 
@@ -54,20 +56,20 @@ public class AccountController {
     }
 
     @PostMapping("/profile-picture")
-    public ResponseEntity<ApplicationResponse<?>> uploadProfilePicture(HttpServletRequest request, @RequestParam("file") MultipartFile file) throws IOException {
-        ApplicationResponse<?> res = accountService.uploadProfilePicture(request, file);
+    public ResponseEntity<ApplicationResponse<?>> uploadProfilePicture(HttpServletRequest request, @AuthenticationPrincipal User user, @RequestParam("file") MultipartFile file) throws IOException {
+        ApplicationResponse<?> res = accountService.uploadProfilePicture(request, user, file);
         return new ResponseEntity<>(res, res.getStatus().value);
     }
 
     @DeleteMapping("/profile-picture")
-    public ResponseEntity<ApplicationResponse<?>> deleteProfilePicture(HttpServletRequest request) {
-        ApplicationResponse<?> res = accountService.deleteProfilePicture(request);
+    public ResponseEntity<ApplicationResponse<?>> deleteProfilePicture(HttpServletRequest request, @AuthenticationPrincipal User user) {
+        ApplicationResponse<?> res = accountService.deleteProfilePicture(request, user);
         return new ResponseEntity<>(res, res.getStatus().value);
     }
 
     @PutMapping("password")
-    public ResponseEntity<ApplicationResponse> changePassword(HttpServletRequest request, @RequestBody ChangePasswordDTO dto) {
-        ApplicationResponse<?> res = accountService.changePassword(request, dto);
+    public ResponseEntity<ApplicationResponse<?>> changePassword(@AuthenticationPrincipal User user, @RequestBody ChangePasswordDTO dto) {
+        ApplicationResponse<?> res = accountService.changePassword(user, dto);
         return new ResponseEntity<>(res, res.getStatus().value);
     }
 

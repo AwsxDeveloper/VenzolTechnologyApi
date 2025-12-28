@@ -23,14 +23,8 @@ import java.util.UUID;
 public class LogoutService {
     private final BrowserSessionRepository browserSessionRepository;
     private final SessionService sessionService;
-    private final UserByRequestService userByRequestService;
 
     public ApplicationResponse<?> logout(HttpServletRequest request) {
-        User user = userByRequestService.get(request);
-        if (user == null) {
-            return new ApplicationResponse<>(ResponseStatus.UNAUTHORIZED, "User not found!", LocalDateTime.now(), null, null);
-        }
-
         String sessionId = sessionService.getSessionId(request);
         if (sessionId == null) {
             return new ApplicationResponse<>(ResponseStatus.UNAUTHORIZED, "Session is empty!", LocalDateTime.now(), null, null);

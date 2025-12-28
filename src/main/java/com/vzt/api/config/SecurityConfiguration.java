@@ -33,7 +33,6 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth ->
                         auth
                                 .requestMatchers(HttpMethod.OPTIONS).permitAll()
-                                .requestMatchers("/v2/account/profile-picture/{imageId}").permitAll()
                                 .anyRequest().access(dbAuthManager));
         http
                 .exceptionHandling(ex ->

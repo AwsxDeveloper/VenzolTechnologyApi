@@ -12,12 +12,7 @@ import java.util.UUID;
 public interface RealmRepository extends JpaRepository<Realm, Long> {
     boolean existsByRealmId(UUID realmId);
     boolean existsBySecret(String secret);
-
     Optional<Realm> findByRealmId(UUID realmId);
-
     boolean existsByOriginAndDisabledIsFalse(String origin);
-
-
     List<Realm> findAllByRealmAdminsContains(User user);
-
 }

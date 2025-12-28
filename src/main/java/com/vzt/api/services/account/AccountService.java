@@ -106,16 +106,7 @@ public class AccountService {
     }
 
 
-    public ApplicationResponse<ProfileResponse> getProfileData(HttpServletRequest request) {
-        String username = getUsernameByRequest(request);
-        if (username == null) {
-            return new ApplicationResponse<>(ResponseStatus.UNAUTHORIZED, "Username not found!", LocalDateTime.now(), null, null);
-        }
-        Optional<User> userOptional = userRepository.findByUsername(username);
-        if (userOptional.isEmpty()) {
-            return new ApplicationResponse<>(ResponseStatus.UNAUTHORIZED, "User not found!", LocalDateTime.now(), null, null);
-        }
-        User user = userOptional.get();
+    public ApplicationResponse<ProfileResponse> getProfileData(User user) {
         ProfileResponse profileResponse = new ProfileResponse(
                 user.getUserDetail().getFirstName(),
                 user.getUserDetail().getLastName(),
@@ -140,16 +131,7 @@ public class AccountService {
         return userRepository.existsByEmail(newEmail);
     }
 
-    public ApplicationResponse<ProfileResponse> updateProfileData(HttpServletRequest request, UpdateProfileDTO updateProfileDTO) {
-        String username = getUsernameByRequest(request);
-        if (username == null) {
-            return new ApplicationResponse<>(ResponseStatus.UNAUTHORIZED, "Username not found!", LocalDateTime.now(), null, null);
-        }
-        Optional<User> userOptional = userRepository.findByUsername(username);
-        if (userOptional.isEmpty()) {
-            return new ApplicationResponse<>(ResponseStatus.UNAUTHORIZED, "User not found!", LocalDateTime.now(), null, null);
-        }
-        User user = userOptional.get();
+    public ApplicationResponse<ProfileResponse> updateProfileData(HttpServletRequest request, User user, UpdateProfileDTO updateProfileDTO) {
         if (!unUsedEmail(updateProfileDTO.getEmail(), user.getEmail())) {
             return new ApplicationResponse<>(ResponseStatus.ERROR, "Email is already taken!", LocalDateTime.now(), null, null);
         }
@@ -168,7 +150,7 @@ public class AccountService {
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
 
-        ApplicationResponse<ProfileResponse> response = getProfileData(request);
+        ApplicationResponse<ProfileResponse> response = getProfileData(user);
         if (response.getStatus() != ResponseStatus.SUCCESS) {
             return response;
         }
@@ -186,16 +168,8 @@ public class AccountService {
         return new ApplicationResponse<>(ResponseStatus.SUCCESS, "Your profile has been updated!", LocalDateTime.now(), accessToken, response.getData());
     }
 
-    public ApplicationResponse<?> uploadProfilePicture(HttpServletRequest request, MultipartFile file) throws IOException {
-        String username = getUsernameByRequest(request);
-        if (username == null) {
-            return new ApplicationResponse<>(ResponseStatus.UNAUTHORIZED, "Username not found!", LocalDateTime.now(), null, null);
-        }
-        Optional<User> userOptional = userRepository.findByUsername(username);
-        if (userOptional.isEmpty()) {
-            return new ApplicationResponse<>(ResponseStatus.UNAUTHORIZED, "User not found!", LocalDateTime.now(), null, null);
-        }
-        User user = userOptional.get();
+    public ApplicationResponse<?> uploadProfilePicture(HttpServletRequest request, User user, MultipartFile file) throws IOException {
+
         ProfilePicture profilePicture = new ProfilePicture(
                 null,
                 generateUUID(),
@@ -221,16 +195,7 @@ public class AccountService {
         return new ApplicationResponse<>(ResponseStatus.SUCCESS, "Your profile picture was successfully uploaded!", LocalDateTime.now(), accessToken, null);
     }
 
-    public ApplicationResponse<?> deleteProfilePicture(HttpServletRequest request) {
-        String username = getUsernameByRequest(request);
-        if (username == null) {
-            return new ApplicationResponse<>(ResponseStatus.UNAUTHORIZED, "Username not found!", LocalDateTime.now(), null, null);
-        }
-        Optional<User> userOptional = userRepository.findByUsername(username);
-        if (userOptional.isEmpty()) {
-            return new ApplicationResponse<>(ResponseStatus.UNAUTHORIZED, "User not found!", LocalDateTime.now(), null, null);
-        }
-        User user = userOptional.get();
+    public ApplicationResponse<?> deleteProfilePicture(HttpServletRequest request, User user) {
         user.setUpdatedAt(LocalDateTime.now());
         user.getUserDetail().setProfilePicture(null);
         userRepository.save(user);
@@ -251,16 +216,7 @@ public class AccountService {
         return profilePictureRepository.findByImageId(UUID.fromString(imageId));
     }
 
-    public ApplicationResponse<?> changePassword(HttpServletRequest request, ChangePasswordDTO dto) {
-        String username = getUsernameByRequest(request);
-        if (username == null) {
-            return new ApplicationResponse<>(ResponseStatus.UNAUTHORIZED, "Username not found!", LocalDateTime.now(), null, null);
-        }
-        Optional<User> userOptional = userRepository.findByUsername(username);
-        if (userOptional.isEmpty()) {
-            return new ApplicationResponse<>(ResponseStatus.UNAUTHORIZED, "User not found!", LocalDateTime.now(), null, null);
-        }
-        User user = userOptional.get();
+    public ApplicationResponse<?> changePassword(User user, ChangePasswordDTO dto) {
         try {
             Authentication authentication = authenticationProvider.authenticate(
                     new UsernamePasswordAuthenticationToken(user.getUsername(), dto.getCurrentPassword())

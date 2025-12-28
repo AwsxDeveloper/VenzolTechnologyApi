@@ -1,9 +1,6 @@
 package com.vzt.api.models.authentication;
 
-public enum AccountType {
-
-    LOCAL,
+public enum SSOType {
     GOOGLE,
-    GITHUB,
-
+    GITHUB
 }
