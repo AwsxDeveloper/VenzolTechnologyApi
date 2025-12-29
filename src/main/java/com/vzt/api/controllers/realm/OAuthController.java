@@ -1,7 +1,9 @@
 package com.vzt.api.controllers.realm;
 
+import com.vzt.api.dtos.realm.CallBackDTO;
 import com.vzt.api.dtos.realm.OAuthCodeCreateDTO;
 import com.vzt.api.responses.ApplicationResponse;
+import com.vzt.api.responses.realm.CallBackResponse;
 import com.vzt.api.services.realm.OAuthRedirectService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,12 @@ public class OAuthController {
     @PostMapping("/code")
     public ResponseEntity<ApplicationResponse<String>> createCode(HttpServletRequest request, @RequestBody OAuthCodeCreateDTO dto) {
         ApplicationResponse<String> response = redirectService.create(request, dto);
+        return ResponseEntity.status(response.getStatus().value).body(response);
+    }
+
+    @PostMapping("/callback")
+    public ResponseEntity<ApplicationResponse<CallBackResponse>> callback(HttpServletRequest request, @RequestBody CallBackDTO dto) {
+        ApplicationResponse<CallBackResponse> response = redirectService.callBack(request, dto);
         return ResponseEntity.status(response.getStatus().value).body(response);
     }
 
